@@ -1,19 +1,30 @@
 
-expanded_quote_list = [
+
+'''
+The quote_list has removed any commas in the quotes as they were causing issues in retrieveing the data as intended.  This is a temporary workaround to fix the issue.
+The biggest issue with doing things this way is it makes the program run in O(N^3) time.  This must be addressed!!
+'''
+
+testing_quote_list = [
                        'nasty in the pasty', 'past nastification','bite my shiny metal ass', 'lrrr', 'Hedonismbot', 'Robot 1-X',
-                       'farnsworth', 'planet express', 'boneitis', 'zoidberg', "we can all fight when we're drunk", 'celebrated poopers', 'robot 1x'
+                       'farnsworth', 'planet express', 'boneitis', 'zoidberg', 'Perfectly symmetrical violence never solved anything'
+                        ]
+
+expanded_quote_list = [
+                       'nasty in the pasty', 'past nastification','bite my shiny metal ass', 'lrrr', 'Hedonismbot', 'Robot 1-X', 'let me worry about blank',
+                       'professor farnsworth', 'planet express', 'boneitis', 'zoidberg', "we can all fight when we're drunk", 'celebrated poopers', 'robot 1x'
                        'death by snu', 'i choose to believe what i was programmed to believe', 'i dont want to live on this planet anymore', 'Wernstrom',
                        "a fembot living in a manbot's manputer's world", 'i find the most erotic part of a woman is the boobies', 'shut up and take my money',
                        'Sexlexia', "zapp brannigan", "brannigan's law", "brannigans law", 'why not zoidberg', 'bender bending rodriguez', 'Cubert Farnsworth',
                        'death to all humans', "Please stop sinning while I'm singing", 'fing-longer', 'fing longer', 'shut up baby i know it', 'hookerbot',
                        'technically correct. The best kind of correct', "once ate a big heaping bowl of salt", 'good fundamentals make up for the inability to dunk',
                        'you changed the outcome by measuring it',  "once ate a big, heaping bowl of salt", 'and i have to protect my kids from understanding it',
-                       'we will not give in to the thinkers', 'dr. banjo', 'doctor banjo', 
+                       'we will not give in to the thinkers', 'dr. banjo', 'doctor banjo', 'hubert farnsworth', 
                        'kill all humans', 'to shreds you say', 'bad and you should feel bad' , 'bad, and you should feel bad', 'shut up baby, i know it',
                        'my manwich', 'My god, a million years', 'now strip naked and get on the probulator', 'With blackjack! And hookers', 'turanga leela',
                        'with blackjack, and hookers', 'With blackjack and hookers', "whalers on the moon", 'but you are lazy right', 'but, you are lazy right',
                        'good news, everyone', 'good news everyone', 'Smell-o-Scope', "Just don't make me smell Uranus",'Urrectum',' jacking on', ' fun on the bun',
-                       'mad rhymes with an 80%', "Captain's itch", 'the hat goes on the head', 'bending college', 'robot house', 'slurm',  'arooo', "'jacking on'",
+                       'mad rhymes with an 80%', "Captain's itch", 'the hat goes on the head', 'bending college', 'robot house', 'slurm',  'arooo',
                        'Nixon with charisma', 'Thundercougarfalconbird',  "Don't quote regulation to me", 'why is there yogurt in this cap', 'roboamerican studies',
                        'lost city of atlanta', 'harpoon my ass', 'Don-Bot', 'donbot', 'The bourgeois human', 'Popplers', 'my precious torso', 'You know, I was God once',
                        'plus some other emotions which are weird and deeply confusing', 'the flesh is spongy and bruised', "She’s got more meat than a cow",
@@ -46,7 +57,7 @@ expanded_quote_list = [
                        'War were declared', 'pimpmobile', 'fatbot', 'ask Wingus and Dingus ', 'You ever kill a man with a sock', 'werecar', 
                        'what smells like blue', 'Looks like fun on a bun',  'Please insert girder', 'hobo and a rabbit', 'robo-american studies',
                        'councel of robot elders', 'robot santa',  'ndnd', 'borax kid', "56?! Now that's all I can think about",  'to shreds, you say',
-                       'if you want a box hurled into the sun you got to do it yourself', 'snoo-snoo'
+                       'if you want a box hurled into the sun you got to do it yourself', 'snoo-snoo', 'space pope',
                        ]
                        # 'Futurama', 'nibbler', 'morbo', 'meatbag', 'gender bender', 'suicide booth', 'leela', 'space pope',]
 

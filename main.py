@@ -1,21 +1,47 @@
-import re
+#import re
 import datetime
 import json
 import requests
 import pandas as pd
-from quote_list import *
-from write_to_html_file import write_to_html_file
+import random
+from quote_list import expanded_quote_list, testing_quote_list
+from write_to_html_file import write_to_html_file, df_to_html, generate_table, table_link
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 
+import dash
+import dash_table
+import dash_core_components as dcc
+import dash_html_components as html
+import cufflinks as cf
+from plotly import graph_objs as go
+import plotly.offline
+
+cf.go_offline()
+cf.set_config_file(offline=False, world_readable=True)
+
+def tryAgain(retries=0):
+    if retries > 10: 
+        print('failed on: ', quote)
+        return
+    try:
+        r = requests.get(url).json()
+    except:
+        print('retrying ', quote)
+        retries+=1
+        tryAgain(retries)
+    return r
 
 comments_with_futurama = []  # to store post_id's to avoid duplicates
 skip_these_subs = ['futurama', 'FuturamaWOTgame',
                    'Futurama_Sleepers', 'unexpectedfuturama']  # Add any subs you want to skip here
 # this will be displayed using Pandas
-futurama_post_dict = {"search quote": [], "body": [], "subreddit": [], "author": [],
+futurama_post_dict = {"search quote": [], "quote hyperlink": [], "body": [], "subreddit": [], "author": [],
                       "date": []}  # , "link to comment":[] , "post id":[] , "link id":[]
+
+#post_data = {} # may use this to unnest the loops below... store the data from the api search as {quote: r} and then use that data for the next loop..
+
 # keeping a running total of all comments found with futurama quotes in quote_list to print to terminal
 post_counter = 0
 
@@ -23,100 +49,215 @@ post_counter = 0
 quote_counter = 1
 print()
 
-for quote in quote_list:
+for quote in expanded_quote_list: # this should go back to 'in expanded_quote_list:'
 
+    # This just gives me updating info on the console as the script is running
+    print('Searching quote: ' + str(quote_counter) + '/' + str(len(expanded_quote_list)) +
+            '                 Posts found: ' + str(post_counter), end='\r', flush=True)
+
+    quote_counter += 1
+
+
+    ###  THIS IS WHERE MY MAJOR SLOWDOWN OCCURS...
     # Get all instances of this quote being used on reddit for your desired time period
-    url = 'https://api.pushshift.io/reddit/search/comment/?q=' + quote + '&size=1000&after=1d'
-    
-    r = requests.get(url).json()
-    # print('size: ', len(r['data']))
-    
+    url = 'https://api.pushshift.io/reddit/search/comment/?q="' +  quote + '"&size=1000&after=1d'
+
+    try:
+        r = requests.get(url).json()
+    except:
+        r = tryAgain()
+
+
     for child in r['data']:
 
         if (child['subreddit']) in skip_these_subs: continue
 
-        # this will find the quote substring in the string body for each submission found.
-        # is here because pushshift.io is dumping all posts that contain all the words in
-        # the quote, and not just those with the quote.  eg. if the post has the words
-        # planet and express anywhere in them, it is being added. not sure how to search
-        # a sub-string using pushshift
-        post_body = str(child['body'])  # for clarity
-        for q in expanded_quote_list:
-            if str(child['id']) in comments_with_futurama: break
+        # post_body = str(child['body'])  # for clarity
 
-            if re.search(q, post_body, re.IGNORECASE):
-
-                # This just gives me updating info on the console as the script is running
-                print('Searching quote: ' + str(quote_counter) + '/' + str(len(quote_list)) +
-                      '                 Posts found: ' + str(post_counter), end='\r', flush=True)
-
-                # for clarity/readability when appending to dictionary below
-                date = datetime.datetime.fromtimestamp(int(child['created_utc']))
-                body = str(child['body'])
-                subreddit = str(child['subreddit'])
-                author = str(child['author'])
-                _id = str(child['id'])
-                # .replace() removes the 't3_' so that i can create a link to the post
-                link_id = str(child['link_id'].replace('t3_', ''))
-                body_hyperlink = '<a href="{0}" target="_blank">{1}</a>'.format(
-                    'https://www.reddit.com/comments/' + link_id + '/_/' + _id, body)
-                # Append data from post to the dictionary
-                futurama_post_dict["date"].append(date)
-                futurama_post_dict["search quote"].append(quote)
-                futurama_post_dict["body"].append(body_hyperlink)
-                futurama_post_dict["subreddit"].append(subreddit)
-                futurama_post_dict["author"].append(author)
-
-                # add post id to collected comments list to avoid duplicates
-                comments_with_futurama.append(_id)
-                post_counter += 1
-    quote_counter += 1
-print()
-
-# display all text in the cells without truncation
-pd.set_option('display.max_colwidth', -1)#253 is a good width...-1 is max width
-df1 = pd.DataFrame(futurama_post_dict)
-df2 = pd.DataFrame(futurama_post_dict)
-# this doesnt sort by date(would need to do df = df.sort...) but it does seem to create a df that fits the screen w/o horizontal scrolling
-# df.sort_values(by=['date'])
-df1.index += 1  # start index at 1
-# Save data in a nice format to an html file # If doing weekly batches, change title to reflect that
-table_title = 'Reddit\'s Futurama Posts from ' + \
-    str(datetime.date.today()) + ' ------ Total Posts Found: ' + str(post_counter)
-write_to_html_file(df1, table_title, 'styledfuturamaposts.html')
-
-# TO PRODUCE A BARCHART USING SEABORN AND MATPLOTLIB
-quote_count = df1['search quote'].value_counts()#.plot(kind='barh')
-fig = sns.barplot(quote_count.index, quote_count.values, alpha=0.8).get_figure()
-plt.title('Frequency of futurama quotes')
-plt.ylabel('Number of Occurences', fontsize=12)
-# plt.xlabel('Quotes Found', fontsize=12)
-plt.xticks(rotation=55, ha='right')# angle the x-axis labels and center them under the bar at the last letter of the quote
-fig.set_size_inches(25, 9)
-# plt.savefig('barGraph.png', bbox_inches='tight')
-# plt.yscale('log')# display the y-axis as a logarithmic axis
-
-# # # THIS IS AN ATTEMPT TO ADD VALUES/PERCENTAGES ABOVE THE BARS ON THE GRAPH
-# for i in fig.patches:
-#     print('in here')
-#     fig.text(i.get_x()+.04, i.get_height()+12000, \
-#     str(round((i.get_height()), 2)), fontsize=11, color='dimgrey', rotation=45)
+        if str(child['id']) in comments_with_futurama: continue #break
 
 
-fig.savefig('barGraph.png', bbox_inches='tight')
+        # for clarity/readability when appending to dictionary below
+        date = datetime.datetime.fromtimestamp(int(child['created_utc']))
+        body = str(child['body'])
+        subreddit = str(child['subreddit'])
+        author = str(child['author'])
+        _id = str(child['id'])
+        # .replace() removes the 't3_' so that i can create a link to the post
+        link_id = str(child['link_id'].replace('t3_', ''))
+        body_hyperlink = '<a href="{0}" target="_blank">{1}</a>'.format(
+            'https://www.reddit.com/comments/' + link_id + '/_/' + _id + '/', body)
+
+        quote_hyperlink = '<a href="{0}" target="_blank">{1}</a>'.format(
+            'https://morbotron.com/?q=' + quote, quote)
+
+        futurama_post_dict['quote hyperlink'].append(quote_hyperlink)
+        # Append data from post to the dictionary   
+        futurama_post_dict["search quote"].append(quote)
+        futurama_post_dict["body"].append(body_hyperlink)
+        futurama_post_dict["subreddit"].append(subreddit)
+        futurama_post_dict["author"].append(author)
+        futurama_post_dict["date"].append(date)
 
 
-# # TO PRODUCE A PIE GRAPH USING MATPLOTLIB
-# quote_count2 = df2['search quote'].value_counts()
-# labels = quote_count2.index
-# sizes = quote_count2.values
-# plt.pie(sizes, 
-#         labels=labels,
-#         shadow=True,
-#         autopct='%1.1f%%')
+        # add post id to collected comments list to avoid duplicates
+        comments_with_futurama.append(_id)
+        post_counter += 1
 
-# plt.axis('equal')
-# plt.show()
-# # plt.savefig('pieChart.png')
 
-# df2.to_csv('futurama.csv')# save to a csv file so I can play with matplotlib using this data
+
+df = pd.DataFrame(futurama_post_dict)
+bar_series = df['quote hyperlink'].value_counts()
+pie_series = df['search quote'].value_counts()
+df = df.drop(columns=['search quote'])
+df.index += 1
+
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
+app.title = 'Finglonger'
+
+bargraph = bar_series.iplot(kind='bar', 
+                    xaxis_tickangle=35,
+                    theme='solar', 
+                    color= '#37db8b', #13B584, #37db8b,  #70E3A0 ##colorscale
+                    title=str(post_counter) + ' Futurama Quotes from ' + str(datetime.date.today()) + ' -- Click on a quote for more info',
+                    yTitle='Quote Count', 
+                    filename='cufflinks/categorical-bar-chart',
+                    asFigure=True)
+bargraph['layout']['xaxis1']['automargin'] = True
+
+
+
+colors = ['#dfe442', '#267baa', '#163542', '#17617c', '#174b5f', '#F5A81A', 
+          '#0f9b66', '#605d39', '#37db8b', '#496c76', '#ec0701',
+          '#863d65', '#E27202', '#704267', '#AAC5DA', '#FE5552', '#FD91AB']
+random.shuffle(colors)
+labels, values = zip(*pie_series.items())
+piechart = go.Figure(data = [go.Pie(
+                    labels=labels,
+                    values=values,
+                    hole=.3,
+                    textposition='inside',
+                    marker=dict(colors=colors, line=dict(color='#000000', width=1)),
+                    )])
+piechart['layout']['paper_bgcolor'] = 'rgba(0,0,0,0)'
+piechart['layout']['title'] = 'Hover for details -- select boxes on right to compare'
+
+
+# scatterplot = df.iplot(kind='scatter', 
+#                     mode='markers', 
+#                     x='search quote', 
+#                     y='subreddit', 
+#                     filename='cufflinks/simple-scatter',
+#                     size='pop',
+#                     text='search quote',
+#                     asFigure=True)
+
+
+app.layout = html.Div([ #style={'background-image': 'url("/assets/planet-express-logo.jpg")'},
+    #Header
+    html.Div([
+        html.H1('The Finglonger \n', style={'text-align': 'center'}),
+        # Make the icon clickable
+        # html.H1(
+        #     html.A([
+        #         html.Img(
+        #             src=app.get_asset_url('Bender.ico'),
+        #             style={
+        #                 'float': 'right',
+        #                 'height': '100px',
+        #                 'width': '100px',
+        #                 'position': 'relative',
+        #                 'padding-top': 0,
+        #                 'padding-right': 0})
+        #     ])),
+        html.H5('Good News Everyone!!', style={'text-align': 'center'}),
+        html.Div('Drag and select any part of the graph to zoom in and inspect.  Double click graph to reset.')
+    ], className = "row"),
+    #Charts/Graphs
+    html.Div([
+        html.Div([            
+            dcc.Graph(id='bar_chart', style={'height': '600px'}, figure = bargraph)
+        ]),#, className = "fourteen columns"
+    ], className="row"), 
+
+    html.Div([
+        html.Div([            
+            dcc.Graph(id='pie_chart',  figure = piechart) #style={'height': '600px'},
+        ]),  #     , className = "eleven columns"
+    ], className="row"),
+
+    # html.Div([
+    #     # data table
+    #     html.Div([
+
+    #         dash_table.DataTable(
+    #             id='Reddit Posts',
+    #             columns = [{'name': i, 'id': i} for i in df.columns],
+    #             data = df.to_dict('records'),
+    #             style_data={
+    #                 'whiteSpace': 'normal',
+    #                 'height': 'auto'
+    #             },
+    #             # style_table={
+    #             #     'whiteSpace': 'normal',
+    #             #     'height': 'auto', #'600px'
+    #             #     # 'overflow': 'scroll'
+    #             # },
+    #             style_header={
+    #                 'backgroundColor': 'rgb(30,30,30)',
+    #                 'fontWeight': 'bold'
+    #             },
+    #             style_cell={
+    #                 'textAlign': 'left',
+    #                 'backgroundColor': 'rgb(50, 50, 50)',
+    #                 'color': 'white'
+    #             },
+    #             style_cell_conditional=[
+    #                 {
+    #                     'if': {'column_id': 'Region'},
+    #                     'textAlign': 'left'
+    #                 }
+    #             ],
+    #             sort_action='native',
+    #             # style_data_conditional=[
+    #             #     {
+    #             #         'if': {'row_index': 'odd'},
+    #             #         'backgroundColor': 'rgb(248, 248, 248)'
+    #             #     }
+    #             # ],
+    #             # row_selectable='multi',
+    #             # selected_rows=[0],
+    #             # fixed_rows={'headers': True, 'data': 0},
+    #             # style_cell_conditional=[
+    #             #     {'if': {'column_id': 'search quote'}, 'width': '60px'},
+    #             # ],
+
+    #         )
+    #     ]),#, className='six columns'
+    # ]), #, className = 'row'
+
+    # html.Div(children=[
+    #     table_link(df, 'body')
+    #     # generate_table(df)
+    # ]),
+
+    html.Div([
+        html.Iframe(height='800px',
+                    width= '100%',
+                    srcDoc= df_to_html(df)
+        ),
+    ]),
+
+
+    # html.Div([            
+    #         dcc.Graph(id='scatterplot', figure = scatterplot)
+    #     ], className = "seven columns")
+
+], style={'backgroundColor': '#0091C7'} )  # #70E3A0                  
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
