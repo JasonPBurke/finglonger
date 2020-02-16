@@ -23,12 +23,12 @@ cf.set_config_file(offline=False, world_readable=True)
 
 def tryAgain(retries=0):
     if retries > 10: 
-        print('failed on: ', quote)
+        # print('failed on: ', quote)
         return
     try:
         r = requests.get(url).json()
     except:
-        print('retrying ', quote)
+        # print('retrying ', quote)
         retries+=1
         tryAgain(retries)
     return r
@@ -47,13 +47,13 @@ post_counter = 0
 
 # this just tells me how many of the quotes have been gone through while running to print to terminal
 quote_counter = 1
-print()
+# print()
 
 for quote in expanded_quote_list: # this should go back to 'in expanded_quote_list:'
 
     # This just gives me updating info on the console as the script is running
-    print('Searching quote: ' + str(quote_counter) + '/' + str(len(expanded_quote_list)) +
-            '                 Posts found: ' + str(post_counter), end='\r', flush=True)
+    # print('Searching quote: ' + str(quote_counter) + '/' + str(len(expanded_quote_list)) +
+    #         '                 Posts found: ' + str(post_counter), end='\r', flush=True)
 
     quote_counter += 1
 
