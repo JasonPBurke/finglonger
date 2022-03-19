@@ -1,7 +1,6 @@
 import aiohttp
 import asyncio
 import datetime
-# import json
 import pandas as pd
 import random
 from quote_list import quote_list
@@ -11,7 +10,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 import cufflinks as cf
 from plotly import graph_objs as go
-# import plotly.offline
 import re
 from pprint import pprint
 
