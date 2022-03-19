@@ -1,7 +1,6 @@
 import dash_html_components as html
 
 
-
 def write_to_html_file(df, title='', filename='out.html'):
     '''
     Write an entire dataframe to an HTML file with nice formatting.
@@ -49,8 +48,6 @@ def write_to_html_file(df, title='', filename='out.html'):
 '''
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(result)
-
-
 
 
 def df_to_html(df, title=''):
@@ -102,36 +99,36 @@ def df_to_html(df, title=''):
     return result
 
 
-
 def generate_table(dataframe, max_rows=350):
     return html.Table(
         # Header
-        [html.Tr([html.Th(col) for col in dataframe.columns]) ] +
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
         # Body
         [html.Tr([
             html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
         ]) for i in range(min(len(dataframe), max_rows))]
     )
 
+
 def table_link(dataframe, link_column):
-    rows=[]
+    rows = []
     for i in range(len(dataframe)):
-        row=[]
+        row = []
         for col in dataframe.columns:
-            value=dataframe.iloc[i][col]
+            value = dataframe.iloc[i][col]
             print('value: ', value)
             print()
             if col == link_column:
-                cell = html.Td(html.A(children=value, href=value, className=value))#, children=value, className=value
+                # , children=value, className=value
+                cell = html.Td(
+                    html.A(children=value, href=value, className=value))
                 print('cell: ', cell)
                 print()
             else:
-                cell=html.Td(children=value,)
+                cell = html.Td(children=value,)
             row.append(cell)
         rows.append(html.Tr(row))
 
     return html.Table(
         [html.Tr([html.Th(col) for col in dataframe.columns])] + rows
     )
-    
-    
