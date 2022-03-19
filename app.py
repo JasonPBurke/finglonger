@@ -71,7 +71,7 @@ async def gather():
         tasks = []
         async with aiohttp.ClientSession() as session:
             url = 'https://beta.pushshift.io/reddit/search/comments/?q=' + \
-                batch_string + '&limit=1000&smartsince=1d'
+                batch_string + '&limit=1000&smartsince=3d'
             tasks.append(fetch(session, url))
             r = await asyncio.gather(*tasks)
 
@@ -142,7 +142,7 @@ bargraph = bar_series.iplot(kind='bar',
                             theme='solar',
                             color='#37db8b',  # 13B584, #37db8b,  #70E3A0 ##colorscale
                             # title=dict(text=str(post_counter) + ' Futurama Quotes from ' + str(datetime.date.today()) + ' -- Click on a quote for more info',
-                            title=dict(text=str(post_counter) + ' Futurama refrences in the last day -- Click on a quote for more info',
+                            title=dict(text=str(post_counter) + ' Futurama refrences in the last three days -- Click on a quote for more info',
                                        x=0.5, xanchor='center', y=0.95, yanchor='top'),
                             yTitle='Quote Count',
                             filename='cufflinks/categorical-bar-chart',
