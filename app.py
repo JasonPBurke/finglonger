@@ -64,7 +64,7 @@ async def gather():
 
     global post_counter
     sub_quote_list = split(quote_list, 42)
-    sub_quote_list.append(['futurama'])
+    sub_quote_list.append(['Futurama'])
     for lst in sub_quote_list:
         quote_batch = [f'"{i}"' for i in lst]
         batch_string = '|'.join(quote_batch)
