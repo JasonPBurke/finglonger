@@ -14,7 +14,7 @@ import re
 from pprint import pprint
 import time
 
-start = time.time()
+# start = time.time()
 
 cf.go_offline()
 cf.set_config_file(offline=False, world_readable=True)
@@ -208,9 +208,9 @@ app.layout = html.Div([
 ], style={'backgroundColor': '#0091C7'})  # #70E3A0
 
 
-end = time.time()
-t_time = end - start
-print(t_time)
+# end = time.time()
+# t_time = end - start
+# print(t_time)
 
 if __name__ == '__main__':
 
