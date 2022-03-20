@@ -4,7 +4,7 @@ async-timeout==4.0.2
 asyncio==3.4.3
 attrs==19.3.0
 backcall==0.1.0
-bleach==3.1.1
+bleach==3.3.0
 brotlipy==0.7.0
 cchardet==2.1.5
 certifi==2019.11.28
