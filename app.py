@@ -74,7 +74,7 @@ async def gather():
         tasks = []
         async with aiohttp.ClientSession() as session:
             url = 'https://beta.pushshift.io/reddit/search/comments/?q=' + \
-                batch_string + '&limit=1000&smartsince=7d'
+                batch_string + '&limit=1000&smartsince=3d'
             tasks.append(fetch(session, url))
             r = await asyncio.gather(*tasks)
 
