@@ -6,13 +6,15 @@ import random
 from quote_list import quote_list
 from write_to_html_file import df_to_html
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import cufflinks as cf
 from plotly import graph_objs as go
 import re
 from pprint import pprint
+import time
 
+start = time.time()
 
 cf.go_offline()
 cf.set_config_file(offline=False, world_readable=True)
@@ -56,11 +58,12 @@ def split(arr, size):
 async def gather():
     comments_with_futurama = []  # to store post_id's to avoid duplicates
     skip_these_subs = [
-        'futurama',
-        'FuturamaWOTgame',
-        'Futurama_Sleepers',
-        'FuturamaSleepers',
-        'unexpectedfuturama']
+        # 'futurama',
+        # 'FuturamaWOTgame',
+        # 'Futurama_Sleepers',
+        # 'FuturamaSleepers',
+        # 'unexpectedfuturama'
+    ]
 
     global post_counter
     sub_quote_list = split(quote_list, 42)
@@ -71,7 +74,7 @@ async def gather():
         tasks = []
         async with aiohttp.ClientSession() as session:
             url = 'https://beta.pushshift.io/reddit/search/comments/?q=' + \
-                batch_string + '&limit=1000&smartsince=3d'
+                batch_string + '&limit=1000&smartsince=7d'
             tasks.append(fetch(session, url))
             r = await asyncio.gather(*tasks)
 
@@ -79,9 +82,15 @@ async def gather():
                 # pprint(child)
                 # print()
 
-                if (child['subreddit']) in skip_these_subs:
-                    continue
-                if str(child['id']) in comments_with_futurama:
+                # if (child['subreddit']) in skip_these_subs:
+                #     continue
+                # if str(child['id']) in comments_with_futurama:
+                #     continue
+                # if str(child['author']) == 'AutoModerator':
+                #     continue
+                if (child['subreddit']) in skip_these_subs \
+                        or str(child['id']) in comments_with_futurama \
+                        or str(child['author']) == 'AutoModerator':
                     continue
 
                 for q in lst:
@@ -142,7 +151,7 @@ bargraph = bar_series.iplot(kind='bar',
                             theme='solar',
                             color='#37db8b',  # 13B584, #37db8b,  #70E3A0 ##colorscale
                             # title=dict(text=str(post_counter) + ' Futurama Quotes from ' + str(datetime.date.today()) + ' -- Click on a quote for more info',
-                            title=dict(text=str(post_counter) + ' Futurama refrences in the last three days -- Click on a quote for more info',
+                            title=dict(text=str(post_counter) + ' Futurama refrences in the last 7 days -- Click on a quote for more info',
                                        x=0.5, xanchor='center', y=0.95, yanchor='top'),
                             yTitle='Quote Count',
                             filename='cufflinks/categorical-bar-chart',
@@ -198,6 +207,10 @@ app.layout = html.Div([
     ]),
 ], style={'backgroundColor': '#0091C7'})  # #70E3A0
 
+
+end = time.time()
+t_time = end - start
+print(t_time)
 
 if __name__ == '__main__':
 
